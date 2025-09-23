@@ -7,8 +7,6 @@ import logging
 import sys
 import time
 import webbrowser
-
-from .browser import PlaywrightLauncher
 from .auth import AuthorizationFlow
 from .config import OAuthConfig, get_client_id
 from .credentials import CredentialRecord, CredentialStore
@@ -63,29 +61,14 @@ def cmd_authorize(args: argparse.Namespace) -> None:
     url = flow.build_authorization_url(state)
     print("Open the following URL in your browser to authorize:")
     print(url)
-    launcher = PlaywrightLauncher()
-    launched = False
-    try:
-        launched = launcher.open(url)
-        if launched:
-            print("Playwright browser launched. Complete the GitHub login in the opened window.")
-    except Exception as exc:  # pragma: no cover - depends on runtime Playwright setup
-        LOGGER.warning("Unable to launch Playwright browser: %s", exc)
-        launched = False
-    if not launched:
-        webbrowser.open(url)
-        print("Falling back to the system browser.")
+    if not webbrowser.open(url):
+        LOGGER.info("Unable to launch a browser automatically. Please copy the URL manually.")
     print("Waiting for callback...")
     try:
         result = flow.wait_for_callback(state)
     except TimeoutError as exc:
-        if launched:
-            launcher.close()
         print(f"Authorization timed out: {exc}", file=sys.stderr)
         sys.exit(2)
-    finally:
-        if launched:
-            launcher.close()
     record = flow.exchange_code(result)
     print("Authorization succeeded. Access token stored.")
     if record.expires_at:

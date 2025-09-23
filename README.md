@@ -1,11 +1,11 @@
 # AnyRouter Auto
 
-> Playwright-powered CLI helper to automate the daily sign-in on [anyrouter.top](https://anyrouter.top/).
+> Minimal-dependency CLI helper to automate the daily sign-in on [anyrouter.top](https://anyrouter.top/).
 
 ## Features
 
 - Generates OAuth authorization URL for the GitHub login flow and captures the callback via a lightweight local HTTP server.
-- Launches a Playwright-driven Chromium window so you can manually complete the GitHub sign-in.
+- Opens the authorization link with the default system browser (or lets you copy it manually) for GitHub sign-in.
 - Stores access and refresh tokens using a JSON file with optional passphrase-based obfuscation.
 - Provides `authorize`, `signin`, `status`, `schedule`, and `clear` commands via a single CLI entry point.
 - Persists sign-in history in CSV format for later inspection.
@@ -20,7 +20,6 @@ python -m venv .venv
 source .venv/bin/activate
 pip install --upgrade pip
 pip install -e .
-playwright install chromium
 ```
 
 ## Configuration
@@ -35,7 +34,7 @@ Invoke the CLI with either the hyphenated `anyrouter-auto` script name or the un
    ```bash
    anyrouter-auto authorize --client-id <github_client_id>
    ```
-   The command prints the authorization URL and opens a Chromium window via Playwright so you can finish the GitHub login flow. After granting access, the CLI exchanges the authorization code and stores the resulting tokens in `~/.anyrouter_auto/credentials.json`. If Playwright fails to launch, the tool falls back to the system browser.
+   The command prints the authorization URL and attempts to launch it with your system browser so you can finish the GitHub login flow. After granting access, the CLI exchanges the authorization code and stores the resulting tokens in `~/.anyrouter_auto/credentials.json`. If the browser cannot be opened automatically, copy the printed URL manually.
 
 2. **Manual sign-in**
    ```bash
@@ -65,7 +64,7 @@ Pass `--passphrase` to `authorize`, `signin`, `status`, or `schedule` to protect
 
 ## Development
 
-- Code style follows standard library modules—Playwright is the only third-party runtime dependency.
+- Code style follows standard library modules and keeps runtime dependencies minimal.
 - Tests are not provided in this initial drop. You can verify import-time regressions with `python -m compileall anyrouter_auto`.
 
 ## Disclaimer
