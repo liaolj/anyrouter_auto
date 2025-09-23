@@ -25,6 +25,9 @@ pip install -e .
 
 Set the GitHub OAuth client identifier through the `ANYROUTER_CLIENT_ID` environment variable, or pass `--client-id` to the `authorize` command. Adjust the daily schedule via the `ANYROUTER_SCHEDULE_HOUR` and `ANYROUTER_SCHEDULE_MINUTE` variables if needed.
 
+
+Invoke the CLI with either the hyphenated `anyrouter-auto` script name or the underscore variant `anyrouter_auto`—both entry points are installed for convenience.
+
 ## Usage
 
 1. **Authorize**
@@ -36,6 +39,7 @@ Set the GitHub OAuth client identifier through the `ANYROUTER_CLIENT_ID` environ
 2. **Manual sign-in**
    ```bash
    anyrouter-auto signin
+
    ```
    The CLI refreshes expired access tokens automatically (if a refresh token is available), performs the sign-in request, and logs the result to `history.csv`.
 
