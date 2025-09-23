@@ -8,6 +8,9 @@ version = "0.1.0"
 description = "Minimal-dependency automation toolkit for anyrouter.top daily sign-in"
 authors = [{name = "Automation Bot"}]
 requires-python = ">=3.11"
+
+dependencies = []
+
 readme = "README.md"
 classifiers = [
     "Programming Language :: Python :: 3",

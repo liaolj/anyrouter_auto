@@ -7,7 +7,6 @@ import logging
 import sys
 import time
 import webbrowser
-
 from .auth import AuthorizationFlow
 from .config import OAuthConfig, get_client_id
 from .credentials import CredentialRecord, CredentialStore
@@ -62,7 +61,10 @@ def cmd_authorize(args: argparse.Namespace) -> None:
     url = flow.build_authorization_url(state)
     print("Open the following URL in your browser to authorize:")
     print(url)
-    webbrowser.open(url)
+
+    if not webbrowser.open(url):
+        LOGGER.info("Unable to launch a browser automatically. Please copy the URL manually.")
+
     print("Waiting for callback...")
     try:
         result = flow.wait_for_callback(state)
