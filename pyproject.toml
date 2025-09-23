@@ -1,0 +1,20 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "anyrouter-auto"
+version = "0.1.0"
+description = "Minimal-dependency automation toolkit for anyrouter.top daily sign-in"
+authors = [{name = "Automation Bot"}]
+requires-python = ">=3.11"
+readme = "README.md"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+
+[project.scripts]
+anyrouter-auto = "anyrouter_auto.__main__:main"
+anyrouter_auto = "anyrouter_auto.__main__:main"
