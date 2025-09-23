@@ -61,8 +61,10 @@ def cmd_authorize(args: argparse.Namespace) -> None:
     url = flow.build_authorization_url(state)
     print("Open the following URL in your browser to authorize:")
     print(url)
+
     if not webbrowser.open(url):
         LOGGER.info("Unable to launch a browser automatically. Please copy the URL manually.")
+
     print("Waiting for callback...")
     try:
         result = flow.wait_for_callback(state)
