@@ -17,4 +17,3 @@ classifiers = [
 
 [project.scripts]
 anyrouter-auto = "anyrouter_auto.__main__:main"
-anyrouter_auto = "anyrouter_auto.__main__:main"
