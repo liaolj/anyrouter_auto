@@ -18,6 +18,7 @@ class CredentialRecord:
     refresh_token: Optional[str] = None
     expires_at: Optional[float] = None
     scope: Optional[str] = None
+    client_id: Optional[str] = None
 
     @property
     def is_expired(self) -> bool:
@@ -36,6 +37,7 @@ class CredentialRecord:
             refresh_token=payload.get("refresh_token"),
             expires_at=payload.get("expires_at"),
             scope=payload.get("scope"),
+            client_id=payload.get("client_id"),
         )
 
 

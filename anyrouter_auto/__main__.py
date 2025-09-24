@@ -52,8 +52,16 @@ def _load_store(passphrase: str | None) -> CredentialStore:
 def cmd_authorize(args: argparse.Namespace) -> None:
     client_id = args.client_id or get_client_id()
     if not client_id:
-        print("ANYROUTER_CLIENT_ID missing. Provide via --client-id or environment.", file=sys.stderr)
-        sys.exit(1)
+        try:
+            client_id = input("Enter your GitHub OAuth client id: ").strip()
+        except EOFError:
+            client_id = ""
+        if not client_id:
+            print(
+                "GitHub client id required. Re-run with --client-id or set ANYROUTER_CLIENT_ID.",
+                file=sys.stderr,
+            )
+            sys.exit(1)
     store = _load_store(args.passphrase)
     config = OAuthConfig(client_id=client_id)
     flow = AuthorizationFlow(config, store)
@@ -61,10 +69,8 @@ def cmd_authorize(args: argparse.Namespace) -> None:
     url = flow.build_authorization_url(state)
     print("Open the following URL in your browser to authorize:")
     print(url)
-
     if not webbrowser.open(url):
         LOGGER.info("Unable to launch a browser automatically. Please copy the URL manually.")
-
     print("Waiting for callback...")
     try:
         result = flow.wait_for_callback(state)
@@ -77,8 +83,11 @@ def cmd_authorize(args: argparse.Namespace) -> None:
         print(f"Token expires at {record.expires_at}")
 
 
-def _ensure_credentials(store: CredentialStore, flow: AuthorizationFlow) -> CredentialRecord:
-    record = store.load()
+def _ensure_credentials(
+    store: CredentialStore, flow: AuthorizationFlow, record: CredentialRecord | None = None
+) -> CredentialRecord:
+    if record is None:
+        record = store.load()
     if record is None:
         raise RuntimeError("Credentials missing. Run authorize first.")
     if record.is_expired:
@@ -88,16 +97,24 @@ def _ensure_credentials(store: CredentialStore, flow: AuthorizationFlow) -> Cred
 
 
 def cmd_signin(args: argparse.Namespace) -> None:
-    client_id = get_client_id()
-    if not client_id:
-        print("ANYROUTER_CLIENT_ID missing in environment. Needed for refresh operations.", file=sys.stderr)
     store = _load_store(args.passphrase)
-    flow = AuthorizationFlow(OAuthConfig(client_id=client_id or ""), store)
     try:
-        record = _ensure_credentials(store, flow)
+        record = store.load()
     except Exception as exc:
         print(f"Unable to load credentials: {exc}", file=sys.stderr)
         sys.exit(1)
+    if record is None:
+        print("Credentials missing. Run authorize first.", file=sys.stderr)
+        sys.exit(1)
+    client_id = get_client_id() or record.client_id
+    if not client_id:
+        print(
+            "GitHub client id unavailable. Set ANYROUTER_CLIENT_ID or re-run authorize with --client-id.",
+            file=sys.stderr,
+        )
+        sys.exit(1)
+    flow = AuthorizationFlow(OAuthConfig(client_id=client_id), store)
+    record = _ensure_credentials(store, flow, record)
     client = SignInClient()
     result = client.perform_sign_in(record)
     HistoryStore().append(result)
@@ -114,6 +131,8 @@ def cmd_status(args: argparse.Namespace) -> None:
         print(f"Access token: {record.access_token[:6]}... status={status}")
         if record.expires_at:
             print(f"Expires at: {record.expires_at}")
+        if record.client_id:
+            print(f"Stored GitHub client id: {record.client_id}")
     history = HistoryStore().load()
     print("Recent history:")
     for item in history[-args.limit :]:
@@ -122,10 +141,18 @@ def cmd_status(args: argparse.Namespace) -> None:
 
 def cmd_schedule(args: argparse.Namespace) -> None:
     store = _load_store(args.passphrase)
-    client_id = get_client_id()
+    record = store.load()
+    if record is None:
+        print("Credentials missing. Run authorize first.", file=sys.stderr)
+        sys.exit(1)
+    client_id = get_client_id() or record.client_id
     if not client_id:
-        print("ANYROUTER_CLIENT_ID missing in environment. Needed for refresh operations.", file=sys.stderr)
-    flow = AuthorizationFlow(OAuthConfig(client_id=client_id or ""), store)
+        print(
+            "GitHub client id unavailable. Set ANYROUTER_CLIENT_ID or re-run authorize with --client-id.",
+            file=sys.stderr,
+        )
+        sys.exit(1)
+    flow = AuthorizationFlow(OAuthConfig(client_id=client_id), store)
 
     def job() -> None:
         record = _ensure_credentials(store, flow)

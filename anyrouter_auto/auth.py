@@ -121,6 +121,7 @@ class AuthorizationFlow:
             refresh_token=data.get("refresh_token"),
             expires_at=expires_at,
             scope=data.get("scope"),
+            client_id=self._config.client_id,
         )
         self._store.save(record)
         return record
